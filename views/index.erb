@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расчет формулы</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background:#333;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .input-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        .input-section h3 {
+            margin-top: 0;
+            color: #2196F3;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            width: 200px;
+        }
+        .step-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+            font-style: italic;
+        }
+        label {
+            display: inline-block;
+            width: 200px;
+            font-weight: 500;
+            color: #555;
+            padding-top: 8px;
+        }
+        input[type="number"] {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 200px;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #calculate {
+            background:#333;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+        }
+        #calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+        #calculate:active {
+            transform: translateY(0);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 60px;
+            font-size: 16px;
+            border-left: 4px solid #4CAF50;
+        }
+        .formula-analysis {
+            margin-top: 12px;
+            margin-bottom: 8px;
+            padding: 12px 16px;
+            background: #ffffff;
+            border-left: 4px solid #ff9800;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .formula-analysis h3 { margin: 0 0 8px 0; color: #ff9800; }
+        .formula-analysis ol { margin: 0 0 0 18px; padding: 0; }
+        .formula-analysis li { margin-bottom: 6px; font-size: 14px; }
+        #result-table {
+            width: 100%;
+            table-layout: fixed;
+        }
+        #result-table td {
+            word-break: break-word;
+            white-space: normal;
+            vertical-align: top;
+            box-sizing: border-box;
+            padding: 8px;
+        }
+        #result-table td.nowrap {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .result hr {
+            margin: 15px 0;
+            border: none;
+            border-top: 1px solid #e0e0e0;
+        }
+        .result > div {
+            margin: 10px 0;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+        }
+        .error {
+            color: #f44336;
+            margin-top: 5px;
+            font-size: 13px;
+            width: 100%;
+            margin-left: 200px;
+            background-color: #ffebee;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .error:not(:empty) {
+            display: block;
+        }
+        #input-table .error {
+            word-break: break-word;
+            white-space: normal;
+            margin-left: 0;
+            width: 100%;
+        }
+        .file-control {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+        }
+        .file-control h3 {
+            margin-top: 0;
+            color: #4CAF50;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .file-control input[type="file"] {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px dashed #4CAF50;
+            border-radius: 4px;
+            width: 100%;
+            cursor: pointer;
+            background-color: #f1f8f4;
+            box-sizing: border-box;
+        }
+        .file-control input[type="file"]:hover {
+            background-color: #e8f5e9;
+        }
+        .file-status {
+            margin: 10px 0;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
+        }
+        .file-status.active {
+            display: flex;
+        }
+        .navigation-controls {
+            margin-top: 15px;
+            display: none;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .navigation-controls.active {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        .navigation-controls button {
+            padding: 10px 20px;
+            background:#333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+        }
+        .navigation-controls button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+        }
+        .navigation-controls button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .set-info {
+            font-weight: bold;
+            color: #4CAF50;
+            padding: 8px 15px;
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        #close-file {
+            padding: 8px 15px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+        }
+        #close-file:hover {
+            background-color: #da190b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(244, 67, 54, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <h1>Расчет формулы \(a \cdot x^4 + b^{1/6} \cdot x^3 + c \cdot x^2 + \dfrac{d \cdot x}{f}\)</h1>
+    <div class="formula-analysis">
+        <h3>Краткая аналитика формулы</h3>
+        <ul>
+            <li>Знаменатель \( f \) не может быть равен нулю (значение \( f = 0 \) входит в диапазон при шаге 12 и обрабатывается как ошибка).</li>
+        </ul>
+    </div>
+    
+    <div class="file-control">
+        <h3>Загрузка аргументов из файла</h3>
+        <input type="file" id="file-input" accept=".json">
+        
+        <div class="file-status" id="file-status">
+            <span>Работа с файлом: <strong id="file-name"></strong></span>
+            <button id="close-file">Прекратить работу с файлом</button>
+        </div>
+        
+        <div class="navigation-controls" id="navigation-controls">
+            <button id="prev-set">← Предыдущий</button>
+            <span class="set-info" id="set-info">Набор 1 из 1</span>
+            <button id="next-set">Следующий →</button>
+        </div>
+    </div>
+
+    <div class="hint-table" style="margin-bottom: 20px; padding: 20px; border: 2px solid #2196F3; border-radius: 8px; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0; color: #2196F3; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Таблица подсказка</h3>
+        <table style="width:100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background:#fafafa;">
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Аргумент</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Диапазон аргумента</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Дискрет аргумента</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding:8px;">a</td><td style="padding:8px;">[0.8; 1.17]</td><td style="padding:8px;">0.01</td></tr>
+                <tr><td style="padding:8px;">b</td><td style="padding:8px;">340</td><td style="padding:8px;">Константа</td></tr>
+                <tr><td style="padding:8px;">c</td><td style="padding:8px;">1.07</td><td style="padding:8px;">Константа</td></tr>
+                <tr><td style="padding:8px;">d</td><td style="padding:8px;">[2; 5.13]</td><td style="padding:8px;">0.01</td></tr>
+                <tr><td style="padding:8px;">f</td><td style="padding:8px;">[-12; 144]</td><td style="padding:8px;">12</td></tr>
+                <tr><td style="padding:8px;">x</td><td style="padding:8px;">∛3 ≈ 1.4422</td><td style="padding:8px;">Константа</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="input-section">
+        <h3>Ввод параметров</h3>
+        <table id="input-table" style="width:100%; border-collapse: collapse; margin-bottom: 12px;">
+            <thead>
+                <tr style="background:#fafafa;">
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Параметр</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Значение</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Ограничения и подсказка</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding:8px; width:160px;">a</td>
+                    <td style="padding:8px;"><input type="number" id="a" step="0.01" required style="width:160px;" /></td>
+                    <td style="padding:8px;">0.8 ≤ a ≤ 1.17; шаг 0.01</td>
+                    <td style="padding:8px;"><div class="error" id="a-error"></div></td>
+                </tr>
+                <tr>
+                    <td style="padding:8px;">d</td>
+                    <td style="padding:8px;"><input type="number" id="d" step="0.01" required style="width:160px;" /></td>
+                    <td style="padding:8px;">2 ≤ d ≤ 5.13; шаг 0.01</td>
+                    <td style="padding:8px;"><div class="error" id="d-error"></div></td>
+                </tr>
+                <tr>
+                    <td style="padding:8px;">f</td>
+                    <td style="padding:8px;"><input type="number" id="f" step="12" required style="width:160px;" /></td>
+                    <td style="padding:8px;">-12 ≤ f ≤ 144; шаг 12</td>
+                    <td style="padding:8px;"><div class="error" id="f-error"></div></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin: 12px 0; padding: 10px; background: #f9f9f9; border-radius: 4px;">
+            <label for="reference" style="display: block; margin-bottom: 4px; font-weight: 500;">
+                Эталонное значение результата (из калькулятора, необязательно):
+            </label>
+            <input type="text" id="reference" placeholder="Например, 14.59826706..." style="width: 300px; padding: 4px 8px;" />
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                Если указано — программа покажет относительную погрешность своих вычислений относительно этого значения.
+            </div>
+        </div>
+
+        <button id="calculate">Вычислить</button>
+    </div>
+    <div class="result" id="result">
+        <div style="margin-bottom:8px; font-weight:600;">Результат</div>
+        <table id="result-table" style="width:100%; border-collapse: collapse;">
+            <colgroup>
+                <col style="width: 30%;" />
+                <col style="width: 50%;" />
+                <col style="width: 20%;" />
+            </colgroup>
+            <thead>
+                <tr style="background:#fafafa;">
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Параметр</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Значение</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #e0e0e0;">Типовая погрешность, %</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding:8px;">a</td><td class="nowrap" style="padding:8px;" id="r-a">—</td><td style="padding:8px;" id="r-a-typ">—</td></tr>
+                <tr><td style="padding:8px;">d</td><td class="nowrap" style="padding:8px;" id="r-d">—</td><td style="padding:8px;" id="r-d-typ">—</td></tr>
+                <tr><td style="padding:8px;">f</td><td class="nowrap" style="padding:8px;" id="r-f">—</td><td style="padding:8px;" id="r-f-typ">—</td></tr>
+                <tr><td style="padding:8px;">Результат</td><td class="nowrap" style="padding:8px;" id="r-result">—</td><td style="padding:8px;" id="r-result-typ">—</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const ranges = {
+            a: { min: 0.8, minInclusion: true, max: 1.17, maxInclusion: true, step: 0.01 },
+            d: { min: 2, minInclusion: true, max: 5.13, maxInclusion: true, step: 0.01 },
+            f: { min: -12, minInclusion: true, max: 144, maxInclusion: true, step: 12 }
+        };
+
+        function validateInput(value, range) {
+            const minValid = range.minInclusion ? value >= range.min : value > range.min;
+            const maxValid = range.maxInclusion ? value <= range.max : value < range.max;
+            const steps = Math.round((value - range.min) / range.step);
+            const isDiscrete = Math.abs((range.min + steps * range.step) - value) < 1e-8;
+            return minValid && maxValid && isDiscrete;
+        }
+
+        function formatPowerOfTen(value) {
+            if (!Number.isFinite(value)) return String(value);
+            if (value === 0) return '0';
+            const exp = Math.round(Math.log10(Math.abs(value)));
+            return `10^{${exp}}`;
+        }
+
+        function typesetMathJax(elements) {
+            const globalMathJax = window.MathJax;
+            if (globalMathJax && typeof globalMathJax.typesetPromise === 'function') {
+                globalMathJax.typesetPromise(elements);
+            } else if (globalMathJax && typeof globalMathJax.typeset === 'function') {
+                globalMathJax.typeset(elements);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = {
+                a: document.getElementById('a'),
+                d: document.getElementById('d'),
+                f: document.getElementById('f')
+            };
+            const inputSection = document.querySelector('.input-section');
+            const errors = {
+                a: document.getElementById('a-error'),
+                d: document.getElementById('d-error'),
+                f: document.getElementById('f-error')
+            };
+            const resultTable = {
+                a: document.getElementById('r-a'),
+                d: document.getElementById('r-d'),
+                f: document.getElementById('r-f'),
+                result: document.getElementById('r-result'),
+                aTyp: document.getElementById('r-a-typ'),
+                dTyp: document.getElementById('r-d-typ'),
+                fTyp: document.getElementById('r-f-typ'),
+                resultTyp: document.getElementById('r-result-typ')
+            };
+            const calculateButton = document.getElementById('calculate');
+            const referenceInput = document.getElementById('reference');
+            const fileInput = document.getElementById('file-input');
+            const fileStatus = document.getElementById('file-status');
+            const fileName = document.getElementById('file-name');
+            const navigationControls = document.getElementById('navigation-controls');
+            const prevButton = document.getElementById('prev-set');
+            const nextButton = document.getElementById('next-set');
+            const setInfo = document.getElementById('set-info');
+            const closeFileButton = document.getElementById('close-file');
+
+            let loadedData = null;
+            let currentSetIndex = 0;
+
+            Object.keys(ranges).forEach((key) => {
+                const input = inputs[key];
+                const range = ranges[key];
+                input.step = range.step.toString();
+                input.min = range.min.toString();
+                input.max = range.max.toString();
+            });
+
+            Object.keys(inputs).forEach((k) => {
+                const input = inputs[k];
+                const err = errors[k];
+                input.addEventListener('input', () => {
+                    const value = parseFloat(input.value);
+                    if (isNaN(value)) {
+                        err.textContent = 'Введите число';
+                        err.style.display = 'block';
+                        return;
+                    }
+                    if (!validateInput(value, ranges[k])) {
+                        const range = ranges[k];
+                        err.textContent = `Значение должно быть ${range.minInclusion ? 'больше или равно' : 'больше'} ${range.min} и ${range.maxInclusion ? 'меньше или равно' : 'меньше'} ${range.max}, с шагом ${range.step}`;
+                        err.style.display = 'block';
+                    } else {
+                        err.textContent = '';
+                        err.style.display = 'none';
+                    }
+                });
+            });
+
+            function loadArgumentSet(set) {
+                inputs.a.value = set.a.toString();
+                inputs.d.value = set.d.toString();
+                inputs.f.value = set.f.toString();
+                Object.values(errors).forEach(error => {
+                    error.textContent = '';
+                    error.style.display = 'none';
+                });
+                Object.keys(inputs).forEach((k) => {
+                    inputs[k].dispatchEvent(new Event('input', { bubbles: true }));
+                });
+            }
+
+            function updateSetInfo() {
+                if (loadedData && loadedData.sets.length > 0) {
+                    const currentSet = loadedData.sets[currentSetIndex];
+                    const setName = currentSet.name ? ` (${currentSet.name})` : '';
+                    setInfo.textContent = `Набор №${currentSetIndex + 1} из ${loadedData.sets.length}${setName}`;
+                    prevButton.disabled = currentSetIndex === 0;
+                    nextButton.disabled = currentSetIndex === loadedData.sets.length - 1;
+                }
+            }
+
+            function autoCalculateForCurrentSet() {
+                if (!loadedData) return;
+                const set = loadedData.sets[currentSetIndex];
+                const aValid = validateInput(set.a, ranges.a);
+                const dValid = validateInput(set.d, ranges.d);
+                const fValid = validateInput(set.f, ranges.f);
+
+                if (!aValid || !dValid || !fValid) {
+                    resultTable.a.textContent = set.a.toString();
+                    resultTable.d.textContent = set.d.toString();
+                    resultTable.f.textContent = set.f.toString();
+                    let errorMsg = 'Ошибка: значения из файла не соответствуют ограничениям. ';
+                    if (!aValid) errorMsg += 'a вне диапазона или не соответствует шагу. ';
+                    if (!dValid) errorMsg += 'd вне диапазона или не соответствует шагу. ';
+                    if (!fValid) errorMsg += 'f вне диапазона или не соответствует шагу. ';
+                    resultTable.result.textContent = errorMsg;
+                    if (resultTable.resultTyp) resultTable.resultTyp.textContent = '—';
+                    return;
+                }
+
+                resultTable.a.textContent = set.a.toString();
+                resultTable.d.textContent = set.d.toString();
+                resultTable.f.textContent = set.f.toString();
+
+                fetch('/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ a: set.a, d: set.d, f: set.f })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    renderResult(data.result, null);
+                })
+                .catch(error => {
+                    resultTable.result.textContent = `Ошибка: ${error.message}`;
+                });
+            }
+
+            function renderResult(localResult, reference) {
+                if (typeof localResult === 'string') {
+                    resultTable.result.textContent = localResult;
+                    if (resultTable.resultTyp) resultTable.resultTyp.textContent = '—';
+                    return;
+                }
+                resultTable.result.textContent = localResult.toString();
+
+                if (resultTable.resultTyp) {
+                    if (typeof reference === 'number' && Number.isFinite(reference)) {
+                        if (reference === 0) {
+                            const abs = Math.abs(localResult - reference);
+                            resultTable.resultTyp.innerHTML = `\\(\\Delta = ${formatPowerOfTen(abs)}\\) (абс.)`;
+                        } else {
+                            const relPercent = Math.abs(localResult - reference) / Math.abs(reference) * 100;
+                            resultTable.resultTyp.innerHTML = `\\(${formatPowerOfTen(relPercent)}\\) %`;
+                        }
+                        typesetMathJax([resultTable.resultTyp]);
+                    } else {
+                        resultTable.resultTyp.textContent = '—';
+                    }
+                }
+            }
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/load-file', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    loadedData = data;
+                    currentSetIndex = 0;
+                    fileStatus.classList.add('active');
+                    fileName.textContent = data.file_name;
+                    if (data.sets.length > 1) {
+                        navigationControls.classList.add('active');
+                    }
+
+                    if (data.file_name !== 'тестовые_примеры.json') {
+                        if (inputSection) inputSection.style.display = 'none';
+                        loadArgumentSet(data.sets[0]);
+                        updateSetInfo();
+                        autoCalculateForCurrentSet();
+                    } else {
+                        if (inputSection) inputSection.style.display = '';
+                        loadArgumentSet(data.sets[0]);
+                        updateSetInfo();
+                    }
+                })
+                .catch(error => {
+                    alert('Ошибка при чтении файла. Убедитесь, что файл содержит корректный JSON.');
+                    console.error(error);
+                });
+            });
+
+            prevButton.addEventListener('click', () => {
+                if (loadedData && currentSetIndex > 0) {
+                    currentSetIndex--;
+                    loadArgumentSet(loadedData.sets[currentSetIndex]);
+                    updateSetInfo();
+                    if (fileName.textContent !== 'тестовые_примеры.json') {
+                        autoCalculateForCurrentSet();
+                    }
+                }
+            });
+
+            nextButton.addEventListener('click', () => {
+                if (loadedData && currentSetIndex < loadedData.sets.length - 1) {
+                    currentSetIndex++;
+                    loadArgumentSet(loadedData.sets[currentSetIndex]);
+                    updateSetInfo();
+                    if (fileName.textContent !== 'тестовые_примеры.json') {
+                        autoCalculateForCurrentSet();
+                    }
+                }
+            });
+
+            closeFileButton.addEventListener('click', () => {
+                loadedData = null;
+                currentSetIndex = 0;
+                fileStatus.classList.remove('active');
+                navigationControls.classList.remove('active');
+                fileInput.value = '';
+                if (inputSection) inputSection.style.display = '';
+                Object.values(inputs).forEach(input => input.value = '');
+                Object.values(errors).forEach(error => error.textContent = '');
+                resultTable.a.textContent = '—';
+                resultTable.d.textContent = '—';
+                resultTable.f.textContent = '—';
+                resultTable.result.textContent = 'Результат появится здесь';
+                resultTable.aTyp.textContent = '—';
+                resultTable.dTyp.textContent = '—';
+                resultTable.fTyp.textContent = '—';
+                resultTable.resultTyp.textContent = '—';
+            });
+
+            calculateButton.addEventListener('click', async () => {
+                let isValid = true;
+                Object.keys(ranges).forEach((key) => {
+                    const input = inputs[key];
+                    const value = parseFloat(input.value);
+                    const error = errors[key];
+
+                    if (isNaN(value)) {
+                        error.textContent = 'Введите число';
+                        error.style.display = 'block';
+                        isValid = false;
+                        return;
+                    }
+
+                    if (!validateInput(value, ranges[key])) {
+                        const range = ranges[key];
+                        error.textContent = `Значение должно быть ${range.minInclusion ? 'больше или равно' : 'больше'} ${range.min} и ${range.maxInclusion ? 'меньше или равно' : 'меньше'} ${range.max}, с шагом ${range.step}`;
+                        error.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        error.textContent = '';
+                        error.style.display = 'none';
+                    }
+                });
+
+                if (isValid) {
+                    const a = parseFloat(inputs.a.value);
+                    const d = parseFloat(inputs.d.value);
+                    const f = parseFloat(inputs.f.value);
+
+                    resultTable.result.textContent = 'Вычисление...';
+                    calculateButton.disabled = true;
+                    resultTable.a.textContent = '—';
+                    resultTable.d.textContent = '—';
+                    resultTable.f.textContent = '—';
+                    resultTable.result.textContent = '—';
+                    resultTable.aTyp.textContent = '—';
+                    resultTable.dTyp.textContent = '—';
+                    resultTable.fTyp.textContent = '—';
+                    resultTable.resultTyp.textContent = '—';
+
+                    try {
+                        const response = await fetch('/calculate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ a, d, f })
+                        });
+                        const data = await response.json();
+                        
+                        if (data.errors) {
+                            Object.keys(data.errors).forEach(key => {
+                                errors[key].textContent = data.errors[key];
+                                errors[key].style.display = 'block';
+                            });
+                            resultTable.result.textContent = 'Ошибка валидации';
+                        } else {
+                            resultTable.a.textContent = a.toString();
+                            resultTable.d.textContent = d.toString();
+                            resultTable.f.textContent = f.toString();
+
+                            let reference;
+                            if (referenceInput && referenceInput.value.trim() !== '') {
+                                const refVal = parseFloat(referenceInput.value);
+                                if (Number.isFinite(refVal)) reference = refVal;
+                            }
+                            renderResult(data.result, reference);
+                        }
+                    } catch (error) {
+                        resultTable.result.textContent = `Ошибка: ${error.message}`;
+                    } finally {
+                        calculateButton.disabled = false;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
