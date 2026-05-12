@@ -3,7 +3,6 @@
 require 'sinatra'
 require 'sinatra/reloader' if development?
 require 'json'
-require 'bigdecimal'
 
 # Константы формулы
 CONST_B = 340
@@ -17,13 +16,6 @@ RANGES = {
   f: { min: -12, min_inclusion: true, max: 144, max_inclusion: true, step: 12 }
 }.freeze
 
-# Приведение числа к точности Float32 (IEEE 754 single precision)
-def f32(val)
-  # В Ruby используем to_f для приближения float32
-  # Для более точной эмуляции можно использовать pack/unpack
-  [val].pack('f').unpack1('f')
-end
-
 # Валидация входного значения
 def validate_input(value, range)
   min_valid = range[:min_inclusion] ? value >= range[:min] : value > range[:min]
@@ -35,31 +27,22 @@ def validate_input(value, range)
   min_valid && max_valid && is_discrete
 end
 
-# Вычисление формулы a*x^4 + b^(1/6)*x^3 + c*x^2 + (d*x)/f в точности Float32
+# Вычисление формулы a*x^4 + b^(1/6)*x^3 + c*x^2 + (d*x)/f
 def calculate_result(a, d, f)
-  # Входы и константы приводим к float32
-  a_f = f32(a)
-  d_f = f32(d)
-  f_f = f32(f)
-  b_f = f32(CONST_B)
-  c_f = f32(CONST_C)
-  x_f = f32(CONST_X)
+  return 'Ошибка: деление на ноль (f = 0)' if f.zero?
 
-  return 'Ошибка: деление на ноль (f = 0)' if f_f.zero?
+  x2 = CONST_X * CONST_X
+  x3 = x2 * CONST_X
+  x4 = x3 * CONST_X
 
-  x2 = f32(x_f * x_f)
-  x3 = f32(x2 * x_f)
-  x4 = f32(x3 * x_f)
+  b_sixth = CONST_B**(1.0 / 6.0)
 
-  b_sixth = f32(b_f**(1.0 / 6.0))
+  term1 = a * x4
+  term2 = b_sixth * x3
+  term3 = CONST_C * x2
+  term4 = (d * CONST_X) / f
 
-  term1 = f32(a_f * x4)
-  term2 = f32(b_sixth * x3)
-  term3 = f32(c_f * x2)
-  term4 = f32(f32(d_f * x_f) / f_f)
-
-  # Накопление суммы тоже в float32
-  f32(f32(f32(term1 + term2) + term3) + term4)
+  term1 + term2 + term3 + term4
 rescue StandardError => e
   "Ошибка: #{e.message}"
 end
